@@ -85,9 +85,9 @@ private $maxY = 200;
 private $percentage = 40;
 ```
 
-The higher the values you write, the longer then obstacle list will take to generate. Percentage is the amount of obstacles Rover will find based on area (maxX * maxY).
+The higher the values you write, the longer then obstacle list will take to generate. Percentage is the amount of obstacles that will exists on area (maxX * maxY).
 
 <br>
 
 ## Recommendations
-Start with a small area to work with, like 10x10 and a percentage of 30. This will give you an idea of how this project works.
+Start with a small area to work with, like 5x5 and a percentage of 30. This will give you an idea of how this project works.

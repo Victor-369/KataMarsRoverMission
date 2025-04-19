@@ -8,14 +8,14 @@ use App\Models\Rover;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Database\QueryException;
 
 
 class RoverController extends Controller
 {
     // Values to set max Mars area (squares) and percentage of obstacles.
-    private $maxX = 200;
-    private $maxY = 200;
+    private $maxX = 5;
+    private $maxY = 5;
     private $percentage = 40;
 
 
@@ -23,13 +23,20 @@ class RoverController extends Controller
     *   Function to reset all tables and rover's position, turning rover into "to waiting orders".
     */
     function setReset(): JsonResponse {
-        // Clear all data and insert basic records
-        $results = DB::select("CALL setReset($this->maxX, $this->maxY, $this->percentage)");
+        try {
+            // Clear all data and insert basic records
+            $results = DB::select("CALL setReset($this->maxX, $this->maxY, $this->percentage)");
 
-        return response()->json([
-            'status' => 'Ok',
-            'message' => 'Values reset correctly',
-        ], 200);
+            return response()->json([
+                'status' => 'Ok',
+                'message' => 'Values reset correctly',
+            ], 200);
+        } catch (QueryException $e) {
+            return response()->json([
+                'status' => 'KO',
+                'message' => 'Procedure setReset does not exist',
+            ], 500);
+        }
     }
 
 
@@ -157,10 +164,6 @@ class RoverController extends Controller
         $nextX = $roverX;
         $nextY = $roverY;
 
-
-        //dd($obstacles);
-
-
         // Check if next square is out of map ($maxX and $maxY)
         switch ($direction) {
             // North
@@ -210,13 +213,15 @@ class RoverController extends Controller
                 break;
         }
 
-        // Check if obstacle exists on next coordinates for Rover.
-        $encontrado = collect($obstacles)->contains(function ($obstacle) use ($nextX, $nextY) {
-            return $obstacle['x'] == $nextX && $obstacle['y'] == $nextY;
-        });
-
-        // Obstacle detected
-        if($encontrado) $isObstacle = 2;
+        // Check if exists obstacles list and if exists obstacle on next coordinates for Rover.
+        if(!$obstacles->isEmpty()) {
+            $encontrado = collect($obstacles)->contains(function ($obstacle) use ($nextX, $nextY) {
+                return $obstacle['x'] == $nextX && $obstacle['y'] == $nextY;
+            });
+    
+            // Obstacle detected
+            if($encontrado) $isObstacle = 2;
+        }
 
         return $isObstacle;
     }
@@ -271,7 +276,7 @@ class RoverController extends Controller
                 'message' => "Not possible to connect with Rover",
             ];
 
-            $status = 400;
+            $status = 500;
 
             return response()->json($json, $status);
         }
