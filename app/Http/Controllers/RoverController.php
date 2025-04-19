@@ -6,14 +6,12 @@ use App\Models\Report;
 use App\Models\Rover;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-//use Illuminate\Database\Eloquent\Collection;
-//use Illuminate\Http\Request;
 
 
 
 class RoverController extends Controller
 {
-    // Values to set max Mars area
+    // Values to set max Mars area (squares)
     private $maxX = 5;
     private $maxY = 5;
 
@@ -69,7 +67,6 @@ class RoverController extends Controller
     *   Function to command Rover.
     */
     function commandsRover(Rover $rover, string $commands): int {
-        //$rover = Rover::first();
         $status = -1;
 
         // Convert commands into an array.
@@ -298,7 +295,7 @@ class RoverController extends Controller
         }
 
 
-        // Start to command Rover
+        // Start to execute commands on Rover
         $result = $this->commandsRover($rover, $commands);
 
 

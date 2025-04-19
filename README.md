@@ -2,7 +2,7 @@
 ## Mars Rover Mission
 
 ### Your Task
-You’re part of the team that explores Mars by sending remotely controlled vehicles to the surface of the planet. Develop a software that translates the commands sent from earth to instructions that are understood by the rover.
+You’re part of the team that explores Mars by sending remotely controlled vehicles to the surface of the planet. Develop software that translates the commands sent from Earth to instructions that are understood by the rover.
 
 ### Requirements
 - You are given the initial starting point (x,y) of a rover and the direction (N,S,E,W) it is facing.
@@ -15,7 +15,7 @@ sequence of commands encounters an obstacle, the rover moves up to the last
 possible point, aborts the sequence and reports the obstacle.
 
 ### Take into account
-- Rovers are expensive, make sure the software works as expected.
+- Rovers are expensive; make sure the software works as expected.
 
 <br>
 <br>
@@ -31,15 +31,15 @@ This is the stack you should need to run this project:
 <br>
 
 ## Installation
-You need Docker to run MariaDB database. Use next command on same folder where you have `docker-compose.yml` file. Then run command `docker compose up` or `docker compose up -d` to create container with database.
+You need Docker to run the MariaDB database. Use the next command in the same folder where you have the `docker-compose.yml` file. Then run the command `docker compose up` or `docker compose up -d` to create a container with a database.
 
-On server side run `php artisan serve` command to start laravel as server.
+On the server side run `php artisan serve` command to start Laravel as a server.
 
 <br>
 
 ## Configuration
 
-On your `.env` file you must have this variables:
+On your `.env` file you must have these variables:
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -49,22 +49,26 @@ DB_USERNAME=root
 DB_PASSWORD=password
 ```
 
-When you connect to database you should run migrations with command `php artisan migrate`. Also execute, on database, this script on folder `database/migrations/sql/procedures.sql`.
+When you connect to the database, you should run migrations with the command `php artisan migrate`. Also execute, on the database, this script on folder `database/migrations/sql/procedures.sql`.
 
 <br>
 
 ## Steps
-This project works completely on API RESTful way. Those instructions must follow these steps.
+This project works completely in a API RESTful way. Those instructions must follow these steps.
 
 1) /api/reset
-    - This just truncate data on tables (rovers and reports) to make a new start.
+    - This just truncates data on tables (rovers and reports) to make a new start.
 2) /api/connect
     - "Connects" with Rover vehicle. It is not possible to send commands to Rover if there is no connection.
 3) /api/commands/{commandsList}
     - You are able to send commands to Rover on `{commandsList}`. Those commands are:
-        - F: Moves Rover forward one square on direction (N, E, S, W) it is aiming.
-        - L: Turn Rover 90 degrees to left.
-        - R: Turn Rover 90 degrees to right.
+        - F: Moves Rover forward one square on the direction (N, E, S, W) it is aiming.
+        - L: Turn Rover 90 degrees to the left.
+        - R: Turn Rover 90 degrees to the right.
     - Direction is where Rover is aiming. Might be North, East, South or West.
     - Only accepts those three commands and no more than ten (10) commands at a time.
 
+<br>
+
+## Reports
+Rover warns when finds an obstacle on its way and sends the information to entity Reports on database.
