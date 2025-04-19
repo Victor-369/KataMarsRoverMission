@@ -9,7 +9,7 @@ You’re part of the team that explores Mars by sending remotely controlled vehi
 - The rover receives a collection of commands. (E.g.) FFRRFFFRL
 - The rover can move forward (f).
 - The rover can move left/right (l,r).
-- Suppose we are on a really weird planet that is square. 200x200 for example :)
+- Suppose we are on a really weird planet that is square. 200x200, for example :)
 - Implement obstacle detection before each move to a new square. If a given
 sequence of commands encounters an obstacle, the rover moves up to the last
 possible point, aborts the sequence and reports the obstacle.
@@ -31,15 +31,15 @@ This is the stack you should need to run this project:
 <br>
 
 ## Installation
-You need Docker to run the MariaDB database. Use the next command in the same folder where you have the `docker-compose.yml` file. Then run the command `docker compose up` or `docker compose up -d` to create a container with a database.
+You need Docker to run the MariaDB database. Then run the command `docker compose up` or `docker compose up -d` to create a container with a database based on `docker-compose.yml` file.
 
-On the server side run `php artisan serve` command to start Laravel as a server.
+On the server side, run `php artisan serve` command to start Laravel as a server.
 
 <br>
 
 ## Configuration
-
 On your `.env` file you must have these variables:
+
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -49,26 +49,41 @@ DB_USERNAME=root
 DB_PASSWORD=password
 ```
 
-When you connect to the database, you should run migrations with the command `php artisan migrate`. Also execute, on the database, this script on folder `database/migrations/sql/procedures.sql`.
+When you connect to the database, you should run migrations with the command `php artisan migrate`. Also execute, on the database, this script on folder `database/migrations/sql/procedures.sql`. This will create a procedure to reset values on entities that are needed.
 
 <br>
 
 ## Steps
-This project works completely in a API RESTful way. Those instructions must follow these steps.
+This project works completely in a API RESTful way. Those instructions must follow these steps in the same order.
 
 1) /api/reset
-    - This just truncates data on tables (rovers and reports) to make a new start.
+    - This just truncates data on tables (rovers, reports and obstacles entity) to make a new start. Sets new coordinates for Rover and puts it "offline" mode. Also delete all records on the reports entity and generate a new list of obstacles at the obstacles entity.
 2) /api/connect
-    - "Connects" with Rover vehicle. It is not possible to send commands to Rover if there is no connection.
+    - "Connects" with Rover vehicle. It is not possible to send commands to Rover if there is "no connection".
 3) /api/commands/{commandsList}
     - You are able to send commands to Rover on `{commandsList}`. Those commands are:
-        - F: Moves Rover forward one square on the direction (N, E, S, W) it is aiming.
+        - F: Moves Rover forward one square in the direction (N, E, S, W) it is aiming. If it does not find any obstacle.
         - L: Turn Rover 90 degrees to the left.
         - R: Turn Rover 90 degrees to the right.
     - Direction is where Rover is aiming. Might be North, East, South or West.
-    - Only accepts those three commands and no more than ten (10) commands at a time.
+    - Only accepts those three commands and no more than ten (10) commands at a time. E.g., `/api/commands/FFRLL`. It accepts upper or lower case.
+    - You can execute this command as much as you want to give orders to Rover.
 
 <br>
 
 ## Reports
-Rover warns when finds an obstacle on its way and sends the information to entity Reports on database.
+Rover warns when it finds an obstacle (or finds the end of the map) on its way and sends the information to the entity Reports on the database.
+
+## Obstacles
+When reset (/api/reset), it generates a list of obstacles randomly in the database (entity obstacles). This list is generated based on variables:
+
+```
+private $maxX = 200;
+private $maxY = 200;
+private $percentage = 40;
+```
+
+The higher the values you write, the longer then obstacle list will take to generate. Percentage is the amount of obstacles Rover will find based on area (maxX * maxY).
+
+## Recommendations
+Start with a small area to work with, like 10x10 and a percentage of 30. This will give you an idea of how this project works.

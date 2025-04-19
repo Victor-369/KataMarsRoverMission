@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Obstacle;
 use App\Models\Report;
 use App\Models\Rover;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -11,9 +13,10 @@ use Illuminate\Support\Facades\DB;
 
 class RoverController extends Controller
 {
-    // Values to set max Mars area (squares)
-    private $maxX = 5;
-    private $maxY = 5;
+    // Values to set max Mars area (squares) and percentage of obstacles.
+    private $maxX = 200;
+    private $maxY = 200;
+    private $percentage = 40;
 
 
     /*
@@ -21,7 +24,7 @@ class RoverController extends Controller
     */
     function setReset(): JsonResponse {
         // Clear all data and insert basic records
-        $results = DB::select("CALL setReset($this->maxX, $this->maxY)");
+        $results = DB::select("CALL setReset($this->maxX, $this->maxY, $this->percentage)");
 
         return response()->json([
             'status' => 'Ok',
@@ -34,7 +37,7 @@ class RoverController extends Controller
     /*
     *   Function to move Rover.
     */
-    function moveRover(Rover $rover): void {
+    function moveRover(Rover $rover): Rover {
         switch ($rover->direction) {
             // North
             case 'N':
@@ -57,7 +60,7 @@ class RoverController extends Controller
                 break;
         }
 
-        $rover->save();
+        return $rover;
     }
 
 
@@ -66,20 +69,25 @@ class RoverController extends Controller
     /*
     *   Function to command Rover.
     */
-    function commandsRover(Rover $rover, string $commands): int {
+    function commandsRover(string $commands): int {
         $status = -1;
+
+        // Get Collection of obstacles from database.
+        $obstacles = Obstacle::select(['x', 'y'])->get();
 
         // Convert commands into an array.
         $commandsArray = str_split(strtoupper($commands));
 
         for($i = 0; $i < count($commandsArray); $i++) { 
+            $rover = Rover::first();
+
             switch($commandsArray[$i]) {
                 // Forward
                 case 'F':
-                    $status = $this->isNextSquareFree($rover->x, $rover->y, $rover->direction);
+                    $status = $this->isNextSquareFree($rover->x, $rover->y, $rover->direction, $obstacles);
 
-                    if($status === 1) {
-                        $this->moveRover($rover);
+                    if($status === 0) {
+                        $rover = $this->moveRover($rover);
                     } else {
                         $report = new Report();
                         $report->x = $rover->x;
@@ -107,21 +115,31 @@ class RoverController extends Controller
                                 break;
                         }
 
-                        $report->status = 'Obstacle detected';
+                        // Check what error Rover found.
+                        switch ($status) {
+                            case 1:
+                                $report->status = 'Out of map';
+                                break;
+                            
+                            case 2:
+                                $report->status = 'Obstacle detected';
+                                break;
+                        }
+                        
                         $report->save();
                     }
                     break;
             
-                // Left
-                case 'L':
+                // Turn Left or Right
+                default:
                     $rover->direction = $this->newDirection($rover->direction, $commandsArray[$i]);
-                    break;
-                
-                // Right
-                case 'R':
-                    $rover->direction = $this->newDirection($rover->direction, $commandsArray[$i]);
-                    break;
+                break;
             }
+
+            $rover->save();
+
+            // if Rover founds an obstacle stops
+            if($status > 0) break;
         }
 
         return $status;
@@ -134,32 +152,73 @@ class RoverController extends Controller
     /*
     *   Function to check next square.
     */
-    function isNextSquareFree(int $roverX, int $roverY, string $direction): int {
-        $isSquareFree = -1;
+    function isNextSquareFree(int $roverX, int $roverY, string $direction, Collection $obstacles): int {
+        $isObstacle = -1;
+        $nextX = $roverX;
+        $nextY = $roverY;
 
+
+        //dd($obstacles);
+
+
+        // Check if next square is out of map ($maxX and $maxY)
         switch ($direction) {
             // North
             case 'N':
-                $roverY + 1 < $this->maxY ? $isSquareFree = 1 : $isSquareFree = 0;
+                $roverY + 1 <= $this->maxY ? $isObstacle = 0 : $isObstacle = 1;
                 break;
 
             // East
             case 'E':
-                $roverX + 1 < $this->maxX ? $isSquareFree = 1 : $isSquareFree = 0;
+                $roverX + 1 <= $this->maxX ? $isObstacle = 0 : $isObstacle = 1;
                 break;
 
             // South
             case 'S':
-                $roverY - 1 > 0 ? $isSquareFree = 1 : $isSquareFree = 0;
+                $roverY - 1 >= 0 ? $isObstacle = 0 : $isObstacle = 1;
                 break;
 
             // West
             case 'W':
-                $roverX - 1 > 0 ? $isSquareFree = 1 : $isSquareFree = 0;
+                $roverX - 1 >= 0 ? $isObstacle = 0 : $isObstacle = 1;
                 break;
         }
 
-        return $isSquareFree;
+        // Rover can not go out of map
+        if($isObstacle === 1) return $isObstacle;
+
+        // Check if next square has obstacle
+        switch ($direction) {
+            // North
+            case 'N':
+                $nextY = $roverY + 1;
+                break;
+
+            // East
+            case 'E':
+                $nextX =  $roverX + 1;
+                break;
+
+            // South
+            case 'S':
+                $nextY = $roverY - 1;
+                break;
+
+            // West
+            case 'W':
+                $nextX = $roverX - 1;
+                break;
+        }
+
+        // Check if obstacle exists on next coordinates for Rover.
+        $encontrado = collect($obstacles)->contains(function ($obstacle) use ($nextX, $nextY) {
+            return $obstacle['x'] == $nextX && $obstacle['y'] == $nextY;
+        });
+
+        // Obstacle detected
+        if($encontrado) $isObstacle = 2;
+
+        return $isObstacle;
     }
 
 
@@ -255,6 +314,8 @@ class RoverController extends Controller
     */
     function setCommandsList(string $commands): JsonResponse {
         $rover = Rover::first();
+        $json = [];
+        $status = 0;
 
         // When not possible to connect with Rover (no record on rover entity at database) or Rover is not active.
         if(!$rover || $rover->isActive === 0) {
@@ -296,11 +357,11 @@ class RoverController extends Controller
 
 
         // Start to execute commands on Rover
-        $result = $this->commandsRover($rover, $commands);
+        $result = $this->commandsRover($commands);
 
 
         switch ($result) {
-            case 1:
+            case 0:
                 $json = [
                     'status' => 'Done',
                     'message' => 'Commands processed correctly',
@@ -309,7 +370,16 @@ class RoverController extends Controller
                 $status = 200;
                 break;
 
-            case 0:
+            case 1:
+                $json = [
+                    'status' => 'Obstacle',
+                    'message' => 'Out of map',
+                ];
+        
+                $status = 200;
+                break;
+
+            case 2:
                 $json = [
                     'status' => 'Obstacle',
                     'message' => 'There is an obstacle which do not let me continue',
