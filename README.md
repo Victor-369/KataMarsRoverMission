@@ -31,7 +31,7 @@ This is the stack you should need to run this project:
 <br>
 
 ## Installation
-You need Docker to run the MariaDB database. Then run the command `docker compose up` or `docker compose up -d` to create a container with a database based on `docker-compose.yml` file.
+You need Docker to run the MySQL database. Then run the command `docker compose up` or `docker compose up -d` to create a container with a database based on `docker-compose.yml` file.
 
 On the server side, run `php artisan serve` command to start Laravel as a server.
 
@@ -91,3 +91,10 @@ The higher the values you write, the longer then obstacle list will take to gene
 
 ## Recommendations
 Start with a small area to work with, like 5x5 and a percentage of 30. This will give you an idea of how this project works.
+
+Connect with MySQL using these credentials:
+
+```
+user: root
+password: password
+```
