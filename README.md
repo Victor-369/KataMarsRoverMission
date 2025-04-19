@@ -74,6 +74,8 @@ This project works completely in a API RESTful way. Those instructions must foll
 ## Reports
 Rover warns when it finds an obstacle (or finds the end of the map) on its way and sends the information to the entity Reports on the database.
 
+<br>
+
 ## Obstacles
 When reset (/api/reset), it generates a list of obstacles randomly in the database (entity obstacles). This list is generated based on variables:
 
@@ -84,6 +86,8 @@ private $percentage = 40;
 ```
 
 The higher the values you write, the longer then obstacle list will take to generate. Percentage is the amount of obstacles Rover will find based on area (maxX * maxY).
+
+<br>
 
 ## Recommendations
 Start with a small area to work with, like 10x10 and a percentage of 30. This will give you an idea of how this project works.
