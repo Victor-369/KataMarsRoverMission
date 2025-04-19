@@ -26,7 +26,7 @@ possible point, aborts the sequence and reports the obstacle.
 This is the stack you should need to run this project:
 - PHP v8.3.6
 - Laravel v12
-- MariaDB v11.4
+- MySQL v9.3.0
 
 <br>
 
