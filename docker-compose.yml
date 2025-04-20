@@ -3,9 +3,10 @@ services:
     image: mysql:9.3.0-oraclelinux9
     container_name: mysql_mars
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: passwordroot
       MYSQL_DATABASE: mars
-      MYSQL_PASSWORD: password
+      MYSQL_USER: usermars
+      MYSQL_PASSWORD: passwordmars
     ports:
       - "3306:3306"
     volumes:

@@ -45,8 +45,8 @@ DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=mars
-DB_USERNAME=root
-DB_PASSWORD=password
+DB_USERNAME=usermars
+DB_PASSWORD=passwordmars
 ```
 
 When you connect to the database, you should run migrations with the command `php artisan migrate`. Also execute, on the database, this script on folder `database/migrations/sql/procedures.sql`. This will create a procedure to reset values on entities that are needed.
@@ -92,9 +92,16 @@ The higher the values you write, the longer then obstacle list will take to gene
 ## Recommendations
 Start with a small area to work with, like 5x5 and a percentage of 30. This will give you an idea of how this project works.
 
-Connect with MySQL using these credentials:
+Connect with MySQL using one of these credentials:
 
 ```
+As root
+
 user: root
-password: password
+password: passwordroot
+
+As user
+
+user: usermars
+password: passwordmars
 ```

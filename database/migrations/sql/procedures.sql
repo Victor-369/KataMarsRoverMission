@@ -1,8 +1,4 @@
-DROP PROCEDURE IF EXISTS mars.setReset;
-
-DELIMITER $$
-$$
-CREATE DEFINER=`root`@`%` PROCEDURE `mars`.`setReset`(
+CREATE PROCEDURE setReset(
 	IN maxX INT,
     IN maxY INT,
     IN percentage INT
@@ -81,8 +77,7 @@ BEGIN
     END WHILE;
     
     COMMIT;
-END$$
-DELIMITER ;
+END
 
 -- ---------------------------------------------------------------------------------------------
 
