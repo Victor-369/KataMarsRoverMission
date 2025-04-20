@@ -85,7 +85,7 @@ private $maxY = 200;
 private $percentage = 40;
 ```
 
-The higher the values you write, the longer then obstacle list will take to generate. Percentage is the amount of obstacles that will exists on area (maxX * maxY).
+The higher the values you write, the longer then obstacle list will take to generate. Percentage is the amount of obstacles that will exists on area (maxX * maxY). **All three values must be integers and above zero**.
 
 <br>
 

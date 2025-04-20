@@ -1,29 +1,35 @@
-CREATE PROCEDURE setReset(
+DROP PROCEDURE IF EXISTS mars.setReset;
+
+DELIMITER $$
+$$
+CREATE DEFINER=`usermars`@`%` PROCEDURE `mars`.`setReset`(
 	IN maxX INT,
     IN maxY INT,
     IN percentage INT
 )
 BEGIN
-	DECLARE valueX, valueY, tempDirection, totalSquares, maxObstacles, i INT;
+	DECLARE valueX, valueY, tempDirection, totalSquares, maxObstacles, counter INT;
     DECLARE direction CHAR(1);
     DECLARE dateNow DATETIME;
 
     -- Auto commit: false
     START TRANSACTION;
 
-    -- Default values
-    IF maxX IS NULL THEN 
-    	SET maxX = 10;
+    -- Default values and minimum values
+    IF maxX IS NULL OR maxX < 2 THEN 
+    	SET maxX = 2;
     END IF;
     
-    IF maxY IS NULL THEN
-        SET maxY = 10;
+    IF maxY IS NULL OR maxY < 2 THEN
+        SET maxY = 2;
     END IF;
     
-    IF percentage IS NULL THEN
-        SET percentage = 30;
+    IF percentage IS NULL OR percentage < 2 THEN
+        SET percentage = 1;
     END IF;
 
+    
+    
     -- -------------------------------------------
     --      Clean records and set values        --
     -- -------------------------------------------
@@ -33,11 +39,15 @@ BEGIN
 
     SET dateNow = NOW();
     
+    
+    
     -- -------------------------------------------
     -- Generate random point (x, y) for rover   --
     -- -------------------------------------------
     SET valueX = FLOOR(0 + (RAND() * (maxX + 1)));
     SET valueY = FLOOR(0 + (RAND() * (maxY + 1)));
+    
+    
     
     -- -------------------------------------------
     --   Generate random direction for rover    --
@@ -55,8 +65,9 @@ BEGIN
             SET direction = 'W';
     END CASE;
 
-    INSERT INTO rovers(x, y, direction, isActive, created_at) 
-    VALUES(valueX, valueY, direction, 0, dateNow);
+    INSERT INTO rovers(x, y, direction, isActive, created_at) VALUES(valueX, valueY, direction, 0, dateNow);
+    
+    
     
     -- -------------------------------------------
     --       Generate random obstacles          --
@@ -64,20 +75,19 @@ BEGIN
     SET totalSquares = maxX * maxY; 
     SET maxObstacles = FLOOR(totalSquares * (percentage / 100));
     
-    -- Loop para inserción de obstáculos
-    SET i = 1;
-    WHILE i <= maxObstacles DO
-        SET valueX = FLOOR(0 + (RAND() * (maxX + 1)));
-        SET valueY = FLOOR(0 + (RAND() * (maxY + 1)));
+    IF maxObstacles > 0 THEN
+	    SET counter = 1;
     
-        INSERT INTO obstacles (x, y, created_at) 
-        VALUES (valueX, valueY, dateNow);
-        
-        SET i = i + 1;
-    END WHILE;
+	    WHILE counter <= maxObstacles DO
+	        SET valueX = FLOOR(0 + (RAND() * (maxX + 1)));
+	        SET valueY = FLOOR(0 + (RAND() * (maxY + 1)));
+	    
+	        INSERT INTO obstacles (x, y, created_at) VALUES(valueX, valueY, dateNow);
+	        
+	        SET counter = counter + 1;
+	    END WHILE;
+	END IF;
     
     COMMIT;
-END
-
--- ---------------------------------------------------------------------------------------------
-
+END$$
+DELIMITER ;
